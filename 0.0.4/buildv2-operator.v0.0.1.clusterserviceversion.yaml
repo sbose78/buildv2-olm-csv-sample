@@ -1,0 +1,179 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'  
+    capabilities: Basic Install
+    description: "An API to build images on Kubernetes with diverse strategies"
+    containerImage: quay.io/redhat-developer/buildv2:v0.0.1
+  name: buildv2-operator.v0.0.4
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: Build creates a new build definition.
+      displayName: Build
+      kind: Build
+      name: builds.build.dev
+      version: v1alpha1
+    - description: BuildStrategy defines a build process. 
+      displayName: BuildStrategy
+      kind: BuildStrategy
+      name: buildstrategies.build.dev
+      version: v1alpha1
+    - description: ClusterBuildStrategy defines a build process in the cluster scope.
+      displayName: ClusterBuildStrategy
+      kind: ClusterBuildStrategy
+      name: clusterbuildstrategies.build.dev
+      version: v1alpha1
+  description: "An API to build container-images on Kubernetes using popular strategies and tools like source-to-image, buildpack-v3, kaniko, jib and buildah, in an extensible way."
+  displayName: Kubernetes Build API
+  install:
+    spec:
+      clusterPermissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - services/finalizers
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          - serviceaccounts
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          verbs:
+          - get
+          - create
+        - apiGroups:
+          - apps
+          resourceNames:
+          - build-operator
+          resources:
+          - deployments/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          verbs:
+          - get
+        - apiGroups:
+          - apps
+          resources:
+          - replicasets
+          - deployments
+          verbs:
+          - get
+        - apiGroups:
+          - build.dev
+          resources:
+          - '*'
+          - buildstrategies
+          - clusterbuildstrategies
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - tekton.dev
+          resources:
+          - tasks
+          - taskruns
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        serviceAccountName: build-operator
+      deployments:
+      - name: build-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: build-operator
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                name: build-operator
+            spec:
+              containers:
+              - command:
+                - build-operator
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: OPERATOR_NAME
+                  value: build-operator
+                image: quay.io/redhat-developer/buildv2:v0.0.1
+                imagePullPolicy: Always
+                name: build-operator
+                resources: {}
+              serviceAccountName: build-operator
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+    - API
+    - Cloud-native
+    - Build
+  maturity: alpha
+  provider:
+    name: The Build Workgroup
+  maintainers:
+    - name: Shoubhik Bose
+      email: shbose@redhat.com
+  version: 0.0.4
