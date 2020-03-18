@@ -6,11 +6,17 @@ metadata:
     capabilities: Basic Install
     description: "An API to build images on Kubernetes with diverse strategies"
     containerImage: quay.io/redhat-developer/buildv2:v0.0.1
-  name: buildv2-operator.v0.0.4
+  name: buildv2-operator.v0.0.5
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
+    required:
+    - name: config.operator.tekton.dev
+      version: v1alpha1
+      kind: Config
+      displayName: OpenShift Pipelines Config
+      description: Represents Installation of Tekton.
     owned:
     - description: Build creates a new build definition.
       displayName: Build
@@ -176,4 +182,4 @@ spec:
   maintainers:
     - name: Shoubhik Bose
       email: shbose@redhat.com
-  version: 0.0.4
+  version: 0.0.5
